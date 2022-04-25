@@ -4,12 +4,13 @@ import * as React from 'react';
 import { ScalarValue } from '../Scalar/ScalarValue';
 import { CardDecorator } from './CardDecorator';
 import {
-  binaryScalars,
-  blobScalars,
-  errorScalars,
-  noneTypeScalar,
-  primitiveScalars,
-  schemaScalars,
+    binaryScalars,
+    blobScalars,
+    errorScalars,
+    noneTypeScalar,
+    primitiveScalars,
+    schemaScalars,
+    structuredDatasetScalars,
 } from './scalarValues';
 
 const stories = storiesOf('Literals/Scalar', module);
@@ -30,3 +31,4 @@ stories.add('NoneType', () => (
 ));
 stories.add('Primitive', () => <>{renderScalars(primitiveScalars)}</>);
 stories.add('Schema', () => <>{renderScalars(schemaScalars)}</>);
+stories.add('StructuredDataset', () => <>{renderScalars(structuredDatasetScalars)}</>);

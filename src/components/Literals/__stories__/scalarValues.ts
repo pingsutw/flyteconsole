@@ -6,6 +6,7 @@ import { blobValues } from './blobValues';
 import { errorValues } from './errorValues';
 import { primitiveValues } from './primitiveValues';
 import { schemaValues } from './schemaValues';
+import {structuredDatasetValues} from "./structuredDatasetValues";
 
 /** Maps an dictionary of raw values to a dictionary of scalars, each with
  * the correct `value` to allow lookup of whichever field is populated.
@@ -22,5 +23,6 @@ export const blobScalars = toScalars('blob', blobValues);
 export const errorScalars = toScalars('error', errorValues);
 export const primitiveScalars = toScalars('primitive', primitiveValues);
 export const schemaScalars = toScalars('schema', schemaValues);
+export const structuredDatasetScalars = toScalars('structuredDataset', structuredDatasetValues)
 
 export const noneTypeScalar: Scalar = { value: 'noneType' };

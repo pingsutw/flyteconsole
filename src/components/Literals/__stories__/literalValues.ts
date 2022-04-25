@@ -7,6 +7,7 @@ import {
   noneTypeScalar,
   primitiveScalars,
   schemaScalars,
+  structuredDatasetScalars,
 } from './scalarValues';
 
 /** Maps a dictionary of `Scalar`s to a dictionary of `Literals` by wrapping
@@ -29,6 +30,7 @@ export const blobLiterals = toLiterals('scalar', blobScalars);
 export const errorLiterals = toLiterals('scalar', errorScalars);
 export const primitiveLiterals = toLiterals('scalar', primitiveScalars);
 export const schemaLiterals = toLiterals('scalar', schemaScalars);
+export const structuredDatasetLiterals = toLiterals('scalar', structuredDatasetScalars);
 
 export const noneTypeLiteral: Literal = {
   value: 'scalar',

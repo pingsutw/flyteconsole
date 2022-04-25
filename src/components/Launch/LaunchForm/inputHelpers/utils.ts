@@ -45,6 +45,7 @@ export function typeIsSupported(typeDefinition: InputTypeDefinition): boolean {
     case InputType.Float:
     case InputType.Integer:
     case InputType.Schema:
+    case InputType.StructuredDataset:
     case InputType.String:
     case InputType.Struct:
       return true;

@@ -4,12 +4,13 @@ import * as React from 'react';
 import { LiteralValue } from '../LiteralValue';
 import { CardDecorator } from './CardDecorator';
 import {
-  binaryLiterals,
-  blobLiterals,
-  errorLiterals,
-  noneTypeLiteral,
-  primitiveLiterals,
-  schemaLiterals,
+    binaryLiterals,
+    blobLiterals,
+    errorLiterals,
+    noneTypeLiteral,
+    primitiveLiterals,
+    schemaLiterals,
+    structuredDatasetLiterals,
 } from './literalValues';
 
 const stories = storiesOf('Literals/Map', module);
@@ -49,6 +50,11 @@ stories.add('Schema', () =>
     literals: schemaLiterals,
   }),
 );
+stories.add('StructuredDataset', () =>
+    renderMap('structuredDataset_map', {
+        literals: structuredDatasetLiterals,
+    }),
+);
 stories.add('Mixed', () =>
   renderMap('mixed_map', {
     literals: {
@@ -58,6 +64,7 @@ stories.add('Mixed', () =>
       noneTypeLiteral,
       ...primitiveLiterals,
       ...schemaLiterals,
+      ...structuredDatasetLiterals
     },
   }),
 );

@@ -146,6 +146,7 @@ export enum InputType {
   Map = 'MAP',
   None = 'NONE',
   Schema = 'SCHEMA',
+  StructuredDataset = 'STRUCTURED_DATASET',
   String = 'STRING',
   Struct = 'STRUCT',
   Unknown = 'UNKNOWN',

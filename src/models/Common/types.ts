@@ -1,4 +1,5 @@
 import { Admin, Core, Protobuf } from 'flyteidl';
+import {flyteidl} from "@flyteorg/flyteidl/gen/pb-js/flyteidl";
 
 /* --- BEGIN flyteidl type aliases --- */
 /** These are types shared across multiple sections of the data model. Most of
@@ -19,6 +20,8 @@ export type BlobDimensionality = Core.BlobType.BlobDimensionality;
 export const BlobDimensionality = Core.BlobType.BlobDimensionality;
 export type SchemaColumnType = Core.SchemaType.SchemaColumn.SchemaColumnType;
 export const SchemaColumnType = Core.SchemaType.SchemaColumn.SchemaColumnType;
+export type StructuredDatasetColumnType = Core.StructuredDatasetType.DatasetColumn;
+export const StructuredDatasetColumnType = Core.StructuredDatasetType.DatasetColumn;
 export type MessageFormat = Core.TaskLog.MessageFormat;
 export const MessageFormat = Core.TaskLog.MessageFormat;
 /* eslint-enable @typescript-eslint/no-redeclare */
@@ -121,6 +124,24 @@ export interface SchemaType extends Core.ISchemaType {
   columns: SchemaColumn[];
 }
 
+export interface StructuredDataset extends Core.IStructuredDataset {
+  uri: string;
+  metadata: StructuredDatasetMetadata
+}
+
+export interface StructuredDatasetMetadata extends Core.IStructuredDatasetMetadata {
+  structuredDatasetType: StructuredDatasetType;
+}
+
+export interface StructuredDatasetColumn extends Core.StructuredDatasetType.IDatasetColumn {
+  name: string;
+  type: LiteralType;
+}
+
+export interface StructuredDatasetType extends Core.IStructuredDatasetType {
+  columns: StructuredDatasetColumn[];
+}
+
 export interface Primitive extends Core.Primitive {
   value: keyof Core.IPrimitive;
 }
@@ -148,6 +169,7 @@ export interface LiteralType extends Core.ILiteralType {
   mapValueType?: LiteralType;
   metadata?: ProtobufStruct;
   schema?: SchemaType;
+  structuredDataset?: StructuredDatasetType;
   simple?: SimpleType;
   enumType?: EnumType;
 }

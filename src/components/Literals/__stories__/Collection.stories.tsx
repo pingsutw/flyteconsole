@@ -4,12 +4,12 @@ import * as React from 'react';
 import { LiteralValue } from '../LiteralValue';
 import { CardDecorator } from './CardDecorator';
 import {
-  binaryLiterals,
-  blobLiterals,
-  errorLiterals,
-  noneTypeLiteral,
-  primitiveLiterals,
-  schemaLiterals,
+    binaryLiterals,
+    blobLiterals,
+    errorLiterals,
+    noneTypeLiteral,
+    primitiveLiterals,
+    schemaLiterals, structuredDatasetLiterals,
 } from './literalValues';
 
 const stories = storiesOf('Literals/Collection', module);
@@ -49,6 +49,11 @@ stories.add('Schema', () =>
     literals: Object.values(schemaLiterals),
   }),
 );
+stories.add('StructuredDataset', () =>
+    renderCollection('structuredDataset_collection', {
+        literals: Object.values(structuredDatasetLiterals),
+    }),
+);
 stories.add('Mixed', () =>
   renderCollection('mixed_collection', {
     literals: [
@@ -58,6 +63,7 @@ stories.add('Mixed', () =>
       noneTypeLiteral,
       ...Object.values(primitiveLiterals),
       ...Object.values(schemaLiterals),
+      ...Object.values(structuredDatasetLiterals),
     ],
   }),
 );

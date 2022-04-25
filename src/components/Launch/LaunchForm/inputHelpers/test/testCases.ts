@@ -1,7 +1,7 @@
 import { dateToTimestamp, millisecondsToDuration, stringifyValue } from 'common/utils';
 import { Core } from 'flyteidl';
 import * as Long from 'long';
-import { BlobDimensionality, SchemaColumnType } from 'models/Common/types';
+import {BlobDimensionality, SchemaColumnType, SimpleType} from 'models/Common/types';
 import { InputType, InputTypeDefinition, InputValue } from '../../types';
 import { blobLiteral, primitiveLiteral } from '../../__mocks__/utils';
 import { literalNone } from '../constants';
@@ -23,6 +23,7 @@ type InputTypeKey =
   | 'map'
   | 'none'
   | 'schema'
+  | 'structuredDataset'
   | 'string'
   | 'struct'
   | 'unknown';
@@ -81,6 +82,14 @@ export const inputTypes: Record<InputTypeKey, InputTypeDefinition> = {
     },
     type: InputType.Schema,
   },
+  structuredDataset: {
+    literalType: {
+      structuredDataset: {
+        columns: [{ name: 'column1', type: {simple: SimpleType.STRING} }],
+      },
+    },
+    type: InputType.StructuredDataset,
+  },
   string: {
     literalType: { simple: Core.SimpleType.STRING },
     type: InputType.String,
@@ -106,6 +115,7 @@ export const supportedPrimitives: InputTypeDefinition[] = [
   inputTypes.float,
   inputTypes.integer,
   inputTypes.schema,
+  inputTypes.structuredDataset,
   inputTypes.struct,
 ];
 
@@ -194,8 +204,9 @@ export const validityTestCases = {
       Long.MIN_VALUE,
     ],
   },
-  // schema is just a specialized string input, so it has the same validity cases as string
+  // schema and structuredDataset are just specialized string inputs, so it has the same validity cases as string
   schema: { invalid: [123, true, new Date(), {}], valid: ['', 'abcdefg'] },
+  structuredDataset: { invalid: [123, true, new Date(), {}], valid: ['', 'abcdefg'] },
   string: { invalid: [123, true, new Date(), {}], valid: ['', 'abcdefg'] },
   struct: {
     invalid: [123, true, new Date(), {}, 'nonObjectString', '[]', '{garbageobject}'],

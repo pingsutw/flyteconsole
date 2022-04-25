@@ -60,6 +60,7 @@ export const SimpleInput: React.FC<InputProps> = (props) => {
     case InputType.Datetime:
       return <DatetimeInput {...props} />;
     case InputType.Schema:
+    case InputType.StructuredDataset:
     case InputType.String:
     case InputType.Integer:
     case InputType.Float:

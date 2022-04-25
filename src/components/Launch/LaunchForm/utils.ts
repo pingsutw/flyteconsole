@@ -1,16 +1,16 @@
-import { timestampToDate } from 'common/utils';
-import { Core } from 'flyteidl';
-import { isObject } from 'lodash';
-import { Identifier, LiteralType, Variable } from 'models/Common/types';
-import { LaunchPlan } from 'models/Launch/types';
-import { Task } from 'models/Task/types';
-import { Workflow } from 'models/Workflow/types';
+import {timestampToDate} from 'common/utils';
+import {Core} from 'flyteidl';
+import {isObject} from 'lodash';
+import {Identifier, LiteralType, Variable} from 'models/Common/types';
+import {LaunchPlan} from 'models/Launch/types';
+import {Task} from 'models/Task/types';
+import {Workflow} from 'models/Workflow/types';
 import * as moment from 'moment';
-import { simpleTypeToInputType, typeLabels } from './constants';
-import { inputToLiteral } from './inputHelpers/inputHelpers';
-import { typeIsSupported } from './inputHelpers/utils';
-import { LaunchState } from './launchMachine';
-import { SearchableSelectorOption } from './SearchableSelector';
+import {simpleTypeToInputType, typeLabels} from './constants';
+import {inputToLiteral} from './inputHelpers/inputHelpers';
+import {typeIsSupported} from './inputHelpers/utils';
+import {LaunchState} from './launchMachine';
+import {SearchableSelectorOption} from './SearchableSelector';
 import {
   BaseInterpretedLaunchState,
   BlobValue,
@@ -151,7 +151,10 @@ export function getInputDefintionForLiteralType(literalType: LiteralType): Input
     result.subtype = getInputDefintionForLiteralType(literalType.mapValueType);
   } else if (literalType.schema) {
     result.type = InputType.Schema;
-  } else if (literalType.simple) {
+  } else if (literalType.structuredDataset) {
+    result.type = InputType.StructuredDataset;
+  }
+  else if (literalType.simple) {
     result.type = simpleTypeToInputType[literalType.simple];
   } else if (literalType.enumType) {
     result.type = InputType.Enum;

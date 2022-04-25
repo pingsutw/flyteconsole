@@ -11,6 +11,7 @@ import { schemaHelper } from './schema';
 import { stringHelper } from './string';
 import { structHelper } from './struct';
 import { InputHelper } from './types';
+import {structuredDatasetHelper} from "./structuredDataset";
 
 const unsupportedHelper = noneHelper;
 
@@ -29,6 +30,7 @@ const inputHelpers: Record<InputType, InputHelper> = {
   [InputType.Map]: unsupportedHelper,
   [InputType.None]: noneHelper,
   [InputType.Schema]: schemaHelper,
+  [InputType.StructuredDataset]: structuredDatasetHelper,
   [InputType.String]: stringHelper,
   [InputType.Struct]: structHelper,
   [InputType.Unknown]: unsupportedHelper,

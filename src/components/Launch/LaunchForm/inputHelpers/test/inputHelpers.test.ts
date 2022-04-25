@@ -267,6 +267,10 @@ describe('validateInput', () => {
     generateValidityTests(inputTypes.schema, validityTestCases.schema);
   });
 
+  describe('structured dataset', () => {
+    generateValidityTests(inputTypes.structuredDataset, validityTestCases.structuredDataset);
+  });
+
   describe('string', () => {
     generateValidityTests(inputTypes.string, validityTestCases.string);
   });
