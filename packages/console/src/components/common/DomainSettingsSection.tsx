@@ -40,27 +40,46 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 interface DomainSettingsSectionProps {
-  configData?: Admin.IWorkflowExecutionConfig;
+  taskResourceAttributes?: Admin.ITaskResourceAttributes,
+  executionQueueAttributes?: Admin.IExecutionQueueAttributes,
+  executionClusterLabel?: Admin.IExecutionClusterLabel,
+  pluginOverrides?: Admin.IPluginOverrides,
+  workflowExecutionConfig?: Admin.IWorkflowExecutionConfig;
+  clusterAssignment?: Admin.IClusterAssignment;
 }
 
-export const DomainSettingsSection = ({
-  configData,
-}: DomainSettingsSectionProps) => {
+export const DomainSettingsSection = ({taskResourceAttributes, executionQueueAttributes, executionClusterLabel, pluginOverrides, workflowExecutionConfig, clusterAssignment}: DomainSettingsSectionProps) => {
   const styles = useStyles();
   const [showTable, setShowTable] = useLocalCache(
     LocalCacheItem.ShowDomainSettings,
   );
 
-  if (!configData || isEmpty(configData)) {
+  if (!workflowExecutionConfig || isEmpty(workflowExecutionConfig)) {
     return null;
   }
 
-  const role = configData.securityContext?.runAs?.iamRole || t('noValue');
+  const role = workflowExecutionConfig.securityContext?.runAs?.iamRole || t('noValue');
   const serviceAccount =
-    configData.securityContext?.runAs?.k8sServiceAccount || t('noValue');
+    workflowExecutionConfig.securityContext?.runAs?.k8sServiceAccount || t('noValue');
   const rawData =
-    configData.rawOutputDataConfig?.outputLocationPrefix || t('noValue');
-  const maxParallelism = configData.maxParallelism || undefined;
+    workflowExecutionConfig.rawOutputDataConfig?.outputLocationPrefix || t('noValue');
+  const maxParallelism = workflowExecutionConfig.maxParallelism || 0;
+
+  const cpuLimit = taskResourceAttributes?.limits?.cpu || undefined;
+  const memoryLimit = taskResourceAttributes?.limits?.memory || undefined;
+  const gpuLimit = taskResourceAttributes?.limits?.gpu || undefined;
+  const storageLimit = taskResourceAttributes?.limits?.storage || undefined;
+  const ephemeralStorageLimit = taskResourceAttributes?.limits?.ephemeralStorage || undefined;
+
+  const cpuRequest = taskResourceAttributes?.defaults?.cpu || undefined;
+  const memoryRequest = taskResourceAttributes?.defaults?.memory || undefined;
+  const gpuRequest = taskResourceAttributes?.defaults?.gpu || undefined;
+  const storageRequest = taskResourceAttributes?.defaults?.storage || undefined;
+  const ephemeralStorageRequest = taskResourceAttributes?.defaults?.ephemeralStorage || undefined;
+
+  const tags = executionQueueAttributes?.tags?.map( (e) => (e + " ") ).join(' ') || undefined;
+  const clusterLabel = executionClusterLabel?.value || undefined;
+  const pluginOverridesList = pluginOverrides?.overrides || undefined;
 
   return (
     <div className={styles.domainSettingsWrapper}>
@@ -98,16 +117,16 @@ export const DomainSettingsSection = ({
           </div>
           <div>
             <p className={styles.subHeader}>{t('labelsHeader')}</p>
-            {configData.labels?.values ? (
-              <DataTable data={configData.labels.values} />
+            {workflowExecutionConfig.labels?.values ? (
+              <DataTable data={workflowExecutionConfig.labels.values} />
             ) : (
               t('noValue')
             )}
           </div>
           <div>
             <p className={styles.subHeader}>{t('annotationsHeader')}</p>
-            {configData.annotations?.values ? (
-              <DataTable data={configData.annotations.values} />
+            {workflowExecutionConfig.annotations?.values ? (
+              <DataTable data={workflowExecutionConfig.annotations.values} />
             ) : (
               t('noValue')
             )}
@@ -124,6 +143,52 @@ export const DomainSettingsSection = ({
               <Typography variant="body2">
                 {maxParallelism ?? t('noValue')}
               </Typography>
+            </div>
+          </div>
+          <div>
+            <div>
+              <p className={styles.subHeader}>{t('request')}</p>
+              <Typography variant="body2">{t('cpu')}: {cpuRequest ?? t('noValue')}</Typography>
+              <Typography variant="body2">{t('memory')}: {memoryRequest ?? t('noValue')}</Typography>
+              <Typography variant="body2">{t('gpu')}: {gpuRequest ?? t('noValue')}</Typography>
+              <Typography variant="body2">{t('storage')}: {storageRequest ?? t('noValue')}</Typography>
+              <Typography variant="body2">{t('ephemeralStorage')}: {ephemeralStorageRequest ?? t('noValue')}</Typography>
+            </div>
+          </div>
+          <div>
+            <div>
+              <p className={styles.subHeader}>{t('limit')}</p>
+              <Typography variant="body2">{t('cpu')}: {cpuLimit}</Typography>
+              <Typography variant="body2">{t('memory')}: {memoryLimit}</Typography>
+              <Typography variant="body2">{t('gpu')}: {gpuLimit ?? t('noValue')}</Typography>
+              <Typography variant="body2">{t('storage')}: {storageLimit ?? t('noValue')}</Typography>
+              <Typography variant="body2">{t('ephemeralStorage')}: {ephemeralStorageLimit ?? t('noValue')}</Typography>
+            </div>
+          </div>
+          <div>
+            <div>
+              <p className={styles.subHeader}>{t('tags')}</p>
+              <Typography variant="body2">{tags ?? t('noValue')}</Typography>
+            </div>
+          </div>
+          <div>
+            <div>
+              <p className={styles.subHeader}>{t('clusterLabel')}</p>
+              <Typography variant="body2">{clusterLabel ?? t('noValue')}</Typography>
+            </div>
+          </div>
+          <div>
+            <div>
+              <p className={styles.subHeader}>{t('pluginOverrides')}</p>
+              <div>{pluginOverridesList?.map((item) => {
+                return (
+                <div key={`plugin-div-${item.taskType}`}>
+                  <Typography variant="body2" key={`plugin-${item.taskType}`}> Task Type: {item.taskType} </Typography>
+                  <Typography variant="body2" key={`plugin-id-${item.taskType}`}> Plugin id: {item.pluginId?.map((item) => item + ' ').join('')} </Typography>
+                  <Typography variant="body2" key={`plugin-bh-${item.taskType}`}> Missing Plugin Behavior: {item.missingPluginBehavior ? "Fail": "Default"} </Typography>
+                </div>
+                );})}
+              </div>
             </div>
           </div>
         </div>

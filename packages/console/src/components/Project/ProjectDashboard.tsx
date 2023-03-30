@@ -7,7 +7,7 @@ import {
 } from 'components/hooks/useNamedEntity';
 import { useWorkflowExecutions } from 'components/hooks/useWorkflowExecutions';
 import { WaitForQuery } from 'components/common/WaitForQuery';
-import { useInfiniteQuery, useQuery, useQueryClient } from 'react-query';
+import {QueryClient, useInfiniteQuery, useQuery, useQueryClient} from 'react-query';
 import { Admin } from '@flyteorg/flyteidl-types';
 import { DomainSettingsSection } from 'components/common/DomainSettingsSection';
 import { getCacheKey } from 'components/Cache/utils';
@@ -39,6 +39,11 @@ import {
 } from 'models/Project/api';
 import t from './strings';
 import { failedToLoadExecutionsString } from './constants';
+import {Workflow, WorkflowId} from "../../models/Workflow/types";
+import {QueryInput, QueryType} from "../data/types";
+import {getWorkflow} from "../../models/Workflow/api";
+import {extractTaskTemplates} from "../hooks/utils";
+import {makeWorkflowQuery} from "../Workflow/workflowQueries";
 
 const useStyles = makeStyles((theme: Theme) => ({
   projectStats: {
@@ -72,6 +77,41 @@ const defaultSort = {
   key: executionSortFields.createdAt,
   direction: SortDirection.DESCENDING,
 };
+
+export function makeProjectDomainAttributeQuery(
+  queryClient: QueryClient,
+  project: string,
+  domain: string,
+  resource: Admin.MatchableResource,
+){
+  return {
+    queryKey: ['projectDomainAttributes', project, domain, resource],
+    queryFn: async () => {
+      const projectDomainAttributes = await getProjectDomainAttributes({project, domain}, resource);
+      queryClient.setQueryData(
+        ['projectDomainAttributes', project, domain, resource],
+        projectDomainAttributes,
+      );
+      return projectDomainAttributes;
+    }};
+}
+
+export function makeProjectAttributeQuery(
+  queryClient: QueryClient,
+  project: string,
+  resource: Admin.MatchableResource,
+){
+  return {
+    queryKey: ['projectAttributes', project, resource],
+    queryFn: async () => {
+      const projectAttributes = await getProjectAttributes({project}, resource);
+      queryClient.setQueryData(
+        ['projectAttributes', project, resource],
+        projectAttributes,
+      );
+      return projectAttributes;
+    }};
+}
 
 export const ProjectDashboard: React.FC<ProjectDashboardProps> = ({
   domainId: domain,
@@ -151,44 +191,6 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = ({
   );
   const numberOfTasks = tasks.length;
 
-  const queryClient = useQueryClient();
-
-  const projectDomainAttributesQuery = useQuery<
-    Admin.ProjectDomainAttributesGetResponse,
-    Error
-  >({
-    queryKey: ['projectDomainAttributes', project, domain],
-    queryFn: async () => {
-      const projectDomainAtributes = await getProjectDomainAttributes({
-        domain,
-        project,
-      });
-      queryClient.setQueryData(
-        ['projectDomainAttributes', project, domain],
-        projectDomainAtributes,
-      );
-      return projectDomainAtributes;
-    },
-  });
-
-  const projectAttributesQuery = useQuery<
-    Admin.ProjectAttributesGetResponse,
-    Error
-  >({
-    queryKey: ['projectAttributes', project],
-    queryFn: async () => {
-      const projectAtributes = await getProjectAttributes({
-        project,
-      });
-      queryClient.setQueryData(
-        ['projectAttributes', project],
-        projectAtributes,
-      );
-      return projectAtributes;
-    },
-    enabled: !projectDomainAttributesQuery.isFetching,
-  });
-
   const content = executionsQuery.isLoadingError ? (
     <DataError
       error={executionsQuery.error}
@@ -210,16 +212,72 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = ({
     />
   );
 
-  const configData =
+  const projectDomainWorkflowExecutionConfigQuery = useQuery<Admin.ProjectDomainAttributesGetResponse, Error>(
+    makeProjectDomainAttributeQuery(useQueryClient(), project, domain, Admin.MatchableResource.WORKFLOW_EXECUTION_CONFIG),
+  );
+  const projectWorkflowExecutionConfigQuery = useQuery<Admin.ProjectAttributesGetResponse, Error>(
+    makeProjectAttributeQuery(useQueryClient(), project, Admin.MatchableResource.WORKFLOW_EXECUTION_CONFIG),
+  );
+  const workflowExecutionConfig =
     merge(
-      projectAttributesQuery.data?.attributes?.matchingAttributes
+      projectWorkflowExecutionConfigQuery.data?.attributes?.matchingAttributes
         ?.workflowExecutionConfig,
-      projectDomainAttributesQuery.data?.attributes?.matchingAttributes
+      projectDomainWorkflowExecutionConfigQuery.data?.attributes?.matchingAttributes
         ?.workflowExecutionConfig,
     ) ?? undefined;
 
+  const projectDomainTaskResourceAttributesQuery = useQuery<Admin.ProjectDomainAttributesGetResponse, Error>(
+    makeProjectDomainAttributeQuery(useQueryClient(), project, domain, Admin.MatchableResource.TASK_RESOURCE),
+  );
+  const projectTaskResourceAttributesQuery = useQuery<Admin.ProjectAttributesGetResponse, Error>(
+    makeProjectAttributeQuery(useQueryClient(), project, Admin.MatchableResource.TASK_RESOURCE),
+  );
+  const taskResourceAttributes =
+    merge(
+      projectTaskResourceAttributesQuery.data?.attributes?.matchingAttributes
+        ?.taskResourceAttributes,
+      projectDomainTaskResourceAttributesQuery.data?.attributes?.matchingAttributes
+        ?.taskResourceAttributes,
+    ) ?? undefined;
+
+  const projectDomainExecutionQueueAttributesQuery = useQuery<Admin.ProjectDomainAttributesGetResponse, Error>(
+    makeProjectDomainAttributeQuery(useQueryClient(), project, domain, Admin.MatchableResource.EXECUTION_QUEUE),
+  );
+  const projectExecutionQueueAttributesQuery = useQuery<Admin.ProjectAttributesGetResponse, Error>(
+    makeProjectAttributeQuery(useQueryClient(), project, Admin.MatchableResource.EXECUTION_QUEUE),
+  );
+  const executionQueueAttributes =
+    merge(
+      projectExecutionQueueAttributesQuery.data?.attributes?.matchingAttributes
+        ?.executionQueueAttributes,
+      projectDomainExecutionQueueAttributesQuery.data?.attributes?.matchingAttributes
+        ?.executionQueueAttributes,
+    ) ?? undefined;
+
+  const executionClusterLabelsQuery = useQuery<Admin.ProjectDomainAttributesGetResponse, Error>(
+    makeProjectDomainAttributeQuery(useQueryClient(), project, domain, Admin.MatchableResource.EXECUTION_CLUSTER_LABEL),
+  );
+  const executionClusterLabel = executionClusterLabelsQuery.data?.attributes?.matchingAttributes?.executionClusterLabel ?? undefined;
+
+  const pluginOverridesQuery = useQuery<Admin.ProjectDomainAttributesGetResponse, Error>(
+    makeProjectDomainAttributeQuery(useQueryClient(), project, domain, Admin.MatchableResource.PLUGIN_OVERRIDE),
+  );
+  const pluginOverrides = pluginOverridesQuery.data?.attributes?.matchingAttributes?.pluginOverrides ?? undefined;
+
+  // const clusterAssignmentQuery = useQuery<Admin.ProjectDomainAttributesGetResponse, Error>(
+  //   makeProjectDomainAttributeQuery(useQueryClient(), project, domain, Admin.MatchableResource.CLUSTER_ASSIGNMENT),
+  // );
+  // const clusterAssignment = clusterAssignmentQuery.data?.attributes?.matchingAttributes?.clusterAssignment ?? undefined;
+
   const renderDomainSettingsSection = () => (
-    <DomainSettingsSection configData={configData} />
+    <DomainSettingsSection
+      taskResourceAttributes={taskResourceAttributes}
+      executionQueueAttributes={executionQueueAttributes}
+      executionClusterLabel={executionClusterLabel}
+      pluginOverrides={pluginOverrides}
+      workflowExecutionConfig={workflowExecutionConfig}
+      // clusterAssignment={clusterAssignment}
+    />
   );
 
   return (
@@ -230,7 +288,7 @@ export const ProjectDashboard: React.FC<ProjectDashboardProps> = ({
         </Typography>
         <Typography variant="h5">{t('tasksTotal', numberOfTasks)}</Typography>
       </div>
-      <WaitForQuery query={projectAttributesQuery}>
+      <WaitForQuery query={projectWorkflowExecutionConfigQuery}>
         {renderDomainSettingsSection}
       </WaitForQuery>
       <div className={styles.container}>

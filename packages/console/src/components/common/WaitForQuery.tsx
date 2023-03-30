@@ -29,7 +29,7 @@ interface WaitForQueryProps<T> {
 }
 
 /** A wrapper component which will wait to display children until the passed `status` string is
- * `QueryStatus.Success`. Will render a defult or provided error component if the
+ * `QueryStatus.Success`. Will render a default or provided error component if the
  * corresponding query results in an error
  */
 export const WaitForQuery = <T extends object>({
