@@ -77,6 +77,7 @@ export const LaunchFormAdvancedInputs = React.forwardRef<
     const styles = useStyles();
     const [labelsParamData, setLabelsParamData] = React.useState({});
     const [annotationsParamData, setAnnotationsParamData] = React.useState({});
+    const [envsParamData, setEnvsParamData] = React.useState({});
     const [disableAll, setDisableAll] = React.useState(false);
     const [maxParallelism, setMaxParallelism] = React.useState('');
     const [rawOutputDataConfig, setRawOutputDataConfig] = React.useState('');
@@ -102,14 +103,20 @@ export const LaunchFormAdvancedInputs = React.forwardRef<
         ...(other.annotations?.values || {}),
         ...(launchPlan?.spec?.annotations?.values || {}),
       };
+      const newEnvs = {
+        ...(other.env?.values || {}),
+        ...(launchPlan?.spec?.env?.values || {}),
+      }
       setLabelsParamData(newLabels);
       setAnnotationsParamData(newAnnotations);
+      setEnvsParamData(newEnvs);
     }, [
       other.disableAll,
       other.maxParallelism,
       other.rawOutputDataConfig,
       other.labels,
       other.annotations,
+      other.env,
       launchPlan?.spec,
     ]);
 
@@ -129,6 +136,9 @@ export const LaunchFormAdvancedInputs = React.forwardRef<
             annotations: {
               values: annotationsParamData,
             },
+            env: {
+              values: envsParamData,
+            }
           } as Admin.IExecutionSpec;
         },
         validate: () => {
@@ -141,6 +151,7 @@ export const LaunchFormAdvancedInputs = React.forwardRef<
         rawOutputDataConfig,
         labelsParamData,
         annotationsParamData,
+        envsParamData,
       ],
     );
 
@@ -161,6 +172,10 @@ export const LaunchFormAdvancedInputs = React.forwardRef<
 
     const handleAnnotationsParamData = React.useCallback(({ formData }) => {
       setAnnotationsParamData(formData);
+    }, []);
+
+    const handleEnvsParamData = React.useCallback(({ formData }) => {
+      setEnvsParamData(formData);
     }, []);
 
     const handleRawOutputDataConfigChange = React.useCallback(
@@ -228,6 +243,39 @@ export const LaunchFormAdvancedInputs = React.forwardRef<
                       }}
                       formData={annotationsParamData}
                       onChange={handleAnnotationsParamData}
+                      validator={validator}
+                    >
+                      <div />
+                    </Form>
+                  </CardContent>
+                </Card>
+              </MuiThemeProvider>
+            </AccordionDetails>
+          </Accordion>
+        </section>
+        <section title="Environment Variables" className={styles.collapsibleSection}>
+          <Accordion>
+            <AccordionSummary
+              expandIcon={<ExpandMoreIcon />}
+              aria-controls="Environment Variables"
+              id="annotations-form"
+            >
+              <header className={styles.sectionHeader}>
+                <Typography variant="h6">Environment Variables</Typography>
+              </header>
+            </AccordionSummary>
+
+            <AccordionDetails>
+              <MuiThemeProvider theme={muiTheme}>
+                <Card variant="outlined">
+                  <CardContent>
+                    <Form
+                      schema={{
+                        type: 'object',
+                        additionalProperties: true,
+                      }}
+                      formData={envsParamData}
+                      onChange={handleEnvsParamData}
                       validator={validator}
                     >
                       <div />
